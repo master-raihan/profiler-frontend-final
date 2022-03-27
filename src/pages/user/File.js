@@ -25,6 +25,9 @@ import Dialog from "@material-ui/core/Dialog";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogActions from "@material-ui/core/DialogActions";
+import Select from '@material-ui/core/Select';
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
 
 
 const styles = (theme) => ({
@@ -64,8 +67,8 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
     const location = useLocation();
     const title = location ? location.pathname.replace(/\//g, "") : "";
     const [open, setOpen] = useState(false);
+    const [fieldName, setValue] = useState('');
     const [selectedContent, setSelectedContent] = useState({});
-
 
 
     const handleClickOpen = (contact) => {
@@ -81,9 +84,18 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
         getAllContactsByAuthUser();
     };
 
+    const handleChange = (event) => {
+        setValue(event.target.value);
+    };
+
+    const addField = (event) => {
+        // setValue(event.target.value);
+    };
+
     useEffect(()=>{
         getAllContactsByAuthUser();
     },[]);// eslint-disable-line react-hooks/exhaustive-deps
+    
     return (
         <Paperbase location={location} title={title}>
             <>
@@ -100,14 +112,40 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
                                     <SearchIcon className={classes.block} color="inherit" />
                                 </Grid>
                                 <Grid item xs>
-                                    <TextField
-                                        fullWidth
-                                        placeholder="Search by email address, phone number, or user UID"
-                                        InputProps={{
-                                            disableUnderline: true,
-                                            className: classes.searchInput,
-                                        }}
-                                    />
+                                   <Grid container>
+                                       <Grid item>
+                                       <InputLabel id="demo-simple-select-label">Field Name</InputLabel>
+                                    <Select
+                                        labelId="demo-simple-select-label"
+                                        id="demo-simple-select"
+                                        value={fieldName}
+                                        onChange={handleChange}
+                                    >
+                                        {userState.contacts.map((contact) => (
+                                            <MenuItem>
+                                            { contact.business_name }
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                       </Grid>
+                                       <Grid item>
+                                       <InputLabel id="demo-simple-select-label">Condition</InputLabel>
+                                    <Select
+                                        labelId="demo-simple-select-label"
+                                        id="demo-simple-select"
+                                        value={fieldName}
+                                        onChange={handleChange}
+                                    >
+                                        <MenuItem value='equal'>equal</MenuItem>
+                                        <MenuItem value='start_with'>start with</MenuItem>
+                                        <MenuItem value='end_with'>end with</MenuItem>
+                                    </Select>
+                                       </Grid>
+                                       <TextField id="standard-basic" label="Search Item..." />
+                                       <Button onClick={addField} color="primary" autoFocus>
+                                        +Add
+                                       </Button>
+                                   </Grid>
                                 </Grid>
                                 <Grid item>
                                     <Tooltip title="Reload">
