@@ -12,6 +12,16 @@ export const userLoginApi = async (request) => {
     );
 };
 
+export const filterApi = async (request) => {
+    const url = `${absUserApiUrl}/contacts/filter`;
+
+    return sendRequestWithToken(
+        "GET",
+        url,
+        request
+    );
+};
+
 export const getAllContactsByAuthUserApi = async () => {
     const url = `${absUserApiUrl}/contacts/get-by-auth-user`;
 

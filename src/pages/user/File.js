@@ -2,7 +2,7 @@ import React,{ useEffect, useState } from "react";
 import {withStyles} from "@material-ui/core/styles";
 import { useLocation } from "react-router-dom";
 import Paperbase from "../../components/user/Paperbase";
-import { getAllContactsByAuthUser } from "../../stateManagement/user/userAction";
+import { getAllContactsByAuthUser, getFields } from "../../stateManagement/user/userAction";
 import { connect } from "react-redux";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -28,7 +28,13 @@ import DialogActions from "@material-ui/core/DialogActions";
 import Select from '@material-ui/core/Select';
 import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
-
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
+import {filterApi} from '../../api/userApi';
+import axios from "axios";
 
 const styles = (theme) => ({
     paper: {
@@ -63,13 +69,18 @@ const styles = (theme) => ({
     }
 });
 
-const File = ({ getAllContactsByAuthUser, userState, classes }) => {
+const File = ({ getAllContactsByAuthUser, getFields, userState, classes }) => {
     const location = useLocation();
     const title = location ? location.pathname.replace(/\//g, "") : "";
     const [open, setOpen] = useState(false);
     const [fieldName, setValue] = useState('');
     const [selectedContent, setSelectedContent] = useState({});
+    const [inputList, setInputList] = useState([{ fieldName: "",condition: "", fieldValue: "" }]);
+    const [value, setRadio] = React.useState('all');
 
+    const handleRadioChange = (event) => {
+        setRadio(event.target.value);
+    };
 
     const handleClickOpen = (contact) => {
         setSelectedContent(contact);
@@ -88,12 +99,33 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
         setValue(event.target.value);
     };
 
+    const handleFormChange = (event, index) => {
+        let data = [...inputList];
+        data[index][event.target.name] = event.target.value;
+        setInputList(data);
+      }
+
+    const handleAddClick = () => {
+        setInputList([...inputList, { fieldName: "", condition: "", fieldValue: "" }]);
+    };
+
+    const handleRemoveClick = index => {
+        const list = [...inputList];
+        list.splice(index, 1);
+        setInputList(list);
+    };
+
     const addField = (event) => {
         // setValue(event.target.value);
     };
 
+    const handleFilterClick = (event) => {
+        filterApi({inputList});
+    };
+
     useEffect(()=>{
         getAllContactsByAuthUser();
+        getFields();
     },[]);// eslint-disable-line react-hooks/exhaustive-deps
     
     return (
@@ -107,46 +139,64 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
                         elevation={0}
                     >
                         <Toolbar>
+                        
                             <Grid container spacing={2} alignItems="center">
                                 <Grid item>
                                     <SearchIcon className={classes.block} color="inherit" />
                                 </Grid>
+                                <FormControl component="fieldset">
+                         <FormLabel component="legend">Gender</FormLabel>
+                         <RadioGroup aria-label="gender" name="gender1" value={value} onChange={handleRadioChange}>
+                          <FormControlLabel value="all" control={<Radio />} label="Any" />
+                          <FormControlLabel value="any" control={<Radio />} label="All" />
+                         </RadioGroup>
+                        </FormControl>
                                 <Grid item xs>
+                                {inputList.map((input, i) => (
                                    <Grid container>
-                                       <Grid item>
-                                       <InputLabel id="demo-simple-select-label">Field Name</InputLabel>
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        value={fieldName}
-                                        onChange={handleChange}
-                                    >
-                                        {userState.contacts.map((contact) => (
-                                            <MenuItem>
-                                            { contact.business_name }
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                       </Grid>
-                                       <Grid item>
-                                       <InputLabel id="demo-simple-select-label">Condition</InputLabel>
-                                    <Select
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        value={fieldName}
-                                        onChange={handleChange}
-                                    >
-                                        <MenuItem value='equal'>equal</MenuItem>
-                                        <MenuItem value='start_with'>start with</MenuItem>
-                                        <MenuItem value='end_with'>end with</MenuItem>
-                                    </Select>
-                                       </Grid>
-                                       <TextField id="standard-basic" label="Search Item..." />
-                                       <Button onClick={addField} color="primary" autoFocus>
-                                        +Add
-                                       </Button>
+                                   <Grid item>
+                                   <InputLabel id="demo-simple-select-label">Field Name</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    name="fieldName"
+                                    value={input.fieldName}
+                                    onChange={event => handleFormChange(event, i)}
+                                >
+                                    {userState.fields.map((contact) => (
+                                        <MenuItem value={contact}>
+                                        { contact }
+                                        </MenuItem>
+                                    ))}
+                                </Select>
                                    </Grid>
+                                   <Grid item>
+                                   <InputLabel id="demo-simple-select-label">Condition</InputLabel>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    name="condition"
+                                    value={input.condition}
+                                    onChange={event => handleFormChange(event, i)}
+                                >
+                                    <MenuItem value='equal'>equal</MenuItem>
+                                    <MenuItem value='start_with'>start with</MenuItem>
+                                    <MenuItem value='end_with'>end with</MenuItem>
+                                </Select>
+                                   </Grid>
+                                   <TextField name="fieldValue"
+                                    value={input.fieldValue}
+                                    onChange={event => handleFormChange(event, i)} id="standard-basic" label="Search Item..." />
+                                   {inputList.length !== 1 && <button
+                                    className="mr10"
+                                    onClick={() => handleRemoveClick(i)}>Remove</button>}
+                                   {inputList.length - 1 === i && <button onClick={handleAddClick}>Add</button>}
+                               
+                            </Grid>
+                                ))}
+                                
                                 </Grid>
+                                <button onClick={handleFilterClick}>Filter</button>
                                 <Grid item>
                                     <Tooltip title="Reload">
                                         <IconButton onClick={handleRefresh}>
@@ -157,6 +207,7 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
                                         </IconButton>
                                     </Tooltip>
                                 </Grid>
+                                
                             </Grid>
                         </Toolbar>
                     </AppBar>
@@ -225,6 +276,6 @@ const mapStateToProps = (state) =>{
 }
 
 const mapDispatchToProps = (dispatch) =>{
-    return { getAllContactsByAuthUser: ()=> dispatch(getAllContactsByAuthUser()) }
+    return { getAllContactsByAuthUser: ()=> dispatch(getAllContactsByAuthUser()), getFields: ()=> dispatch(getFields()) }
 }
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(File));
