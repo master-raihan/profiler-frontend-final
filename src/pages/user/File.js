@@ -2,7 +2,7 @@ import React,{ useEffect, useState } from "react";
 import {withStyles} from "@material-ui/core/styles";
 import { useLocation } from "react-router-dom";
 import Paperbase from "../../components/user/Paperbase";
-import { getAllContactsByAuthUser } from "../../stateManagement/user/userAction";
+import {getAllContactsByAuthUser, getFields} from "../../stateManagement/user/userAction";
 import { connect } from "react-redux";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
@@ -60,13 +60,12 @@ const styles = (theme) => ({
     }
 });
 
-const File = ({ getAllContactsByAuthUser, userState, classes }) => {
+const File = ({ getAllContactsByAuthUser, getFields,userState, classes }) => {
     const location = useLocation();
     const title = location ? location.pathname.replace(/\//g, "") : "";
     const [open, setOpen] = useState(false);
     const [selectedContent, setSelectedContent] = useState({});
-
-
+    const [customFields, setCustomFields] = useState([]);
 
     const handleClickOpen = (contact) => {
         setSelectedContent(contact);
@@ -81,8 +80,13 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
         getAllContactsByAuthUser();
     };
 
+    const handleNewCustomField = (event) => {
+        setCustomFields([ ...customFields, { [event.target.name]: event.target.value } ]);
+    }
+
     useEffect(()=>{
         getAllContactsByAuthUser();
+        getFields();
     },[]);// eslint-disable-line react-hooks/exhaustive-deps
     return (
         <Paperbase location={location} title={title}>
@@ -110,6 +114,13 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
                                     />
                                 </Grid>
                                 <Grid item>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        className={classes.addUser}
+                                    >
+                                        Add New Field
+                                    </Button>
                                     <Tooltip title="Reload">
                                         <IconButton onClick={handleRefresh}>
                                             <RefreshIcon
@@ -169,7 +180,6 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
                     <DialogTitle id="alert-dialog-title">{selectedContent.business_name}</DialogTitle>
                     <DialogContent>
                         Links
-
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={handleClose} color="primary" autoFocus>
@@ -177,16 +187,43 @@ const File = ({ getAllContactsByAuthUser, userState, classes }) => {
                         </Button>
                     </DialogActions>
                 </Dialog>
+                <CustomFieldDialog classes={classes}/>
             </>
         </Paperbase>
     );
 };
+
+
+function CustomFieldDialog({ classes }) {
+
+    return (
+        <Dialog aria-labelledby="simple-dialog-title" open={false}>
+            <DialogTitle id="simple-dialog-title">Field Details</DialogTitle>
+            <DialogContent>
+                <TextField
+                    fullWidth
+                    placeholder="Field Name"
+                    InputProps={{
+                        disableUnderline: false,
+                        className: classes.searchInput,
+                    }}
+                />
+            </DialogContent>
+            <DialogActions>
+                <Button color="primary" autoFocus>
+                    Save
+                </Button>
+            </DialogActions>
+        </Dialog>
+    );
+}
+
 
 const mapStateToProps = (state) =>{
     return { userState: state.userReducer }
 }
 
 const mapDispatchToProps = (dispatch) =>{
-    return { getAllContactsByAuthUser: ()=> dispatch(getAllContactsByAuthUser()) }
+    return { getAllContactsByAuthUser: ()=> dispatch(getAllContactsByAuthUser()), getFields: ()=> dispatch(getFields()) }
 }
 export default connect(mapStateToProps, mapDispatchToProps)(withStyles(styles)(File));

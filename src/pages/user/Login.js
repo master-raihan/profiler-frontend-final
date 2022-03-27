@@ -12,6 +12,7 @@ import Container from "@material-ui/core/Container";
 import { connect } from "react-redux";
 import { userLogin } from "../../stateManagement/user/userAction";
 import Grid from "@material-ui/core/Grid";
+import Snackbar from "@material-ui/core/Snackbar";
 
 function Copyright() {
     return (
@@ -48,6 +49,7 @@ const styles = (theme) => ({
 
 function Login({ history, userState, login, classes }) {
     document.title = "User Login";
+    const [openSnack, setOpenSnack] = useState(false);
     const [payload, setPayload] = useState({
         email: "",
         password: "",
@@ -62,10 +64,17 @@ function Login({ history, userState, login, classes }) {
         login(payload);
     };
 
+    const handleClose = () => {
+        setOpenSnack(false);
+    };
 
     useEffect(() => {
         if(!userState.isLoading && userState.isLoggedIn){
             history.push("/user/files");
+        }
+
+        if(userState.error){
+            setOpenSnack(true);
         }
     },[userState]);// eslint-disable-line react-hooks/exhaustive-deps
 
@@ -125,6 +134,11 @@ function Login({ history, userState, login, classes }) {
                     </Grid>
                 </form>
             </div>
+            <Snackbar
+                open={openSnack}
+                onClose={handleClose}
+                message={userState.errorMessage}
+            />
             <Box mt={8}>
                 <Copyright />
             </Box>

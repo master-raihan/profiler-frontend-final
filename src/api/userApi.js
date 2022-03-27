@@ -19,4 +19,13 @@ export const getAllContactsByAuthUserApi = async () => {
         "GET",
         url
     );
-}
+};
+
+export const getFieldsApi = async () => {
+    const url = `${absUserApiUrl}/contacts/fields`;
+
+    return sendRequestWithToken(
+        "GET",
+        url
+    );
+};

@@ -1,6 +1,6 @@
 import { all, call, put, takeEvery } from "redux-saga/effects";
 import * as ACTION from "./userActionType";
-import { userLoginApi, getAllContactsByAuthUserApi } from "../../api/userApi";
+import { userLoginApi, getAllContactsByAuthUserApi, getFieldsApi } from "../../api/userApi";
 
 function* userLoginSaga(action) {
     try{
@@ -27,9 +27,21 @@ function* getAllContactsByAuthUserSaga(action) {
     }
 }
 
+function* getFieldsSaga(action) {
+    try{
+        const response = yield call(getFieldsApi, action.payload);
+        if(response.data.success){
+            yield put({ type: ACTION.GET_FIELDS_SUCCESS, payload: response.data });
+        }
+    }catch (error) {
+        yield put({ type: ACTION.GET_FIELDS_FAILED, payload: error.message});
+    }
+}
+
 function* userWatcher() {
     yield takeEvery(ACTION.USER_LOGIN, userLoginSaga);
     yield  takeEvery(ACTION.GET_ALL_CONTACTS_BY_AUTH_USER, getAllContactsByAuthUserSaga);
+    yield  takeEvery(ACTION.GET_FIELDS, getFieldsSaga);
 }
 
 export default function* userSaga() {

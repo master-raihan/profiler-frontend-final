@@ -12,6 +12,7 @@ import Container from "@material-ui/core/Container";
 import { connect } from "react-redux";
 import { adminLogin } from "../../stateManagement/admin/adminAction";
 import Grid from "@material-ui/core/Grid";
+import Snackbar from '@material-ui/core/Snackbar';
 
 function Copyright() {
     return (
@@ -53,6 +54,8 @@ function Login({ history, adminState, login, classes }) {
         password: "",
     });
 
+    const [openSnack, setOpenSnack] = useState(false);
+
     const inputsHandler = (e) => {
         setPayload({ ...payload, [e.target.name]: e.target.value });
     };
@@ -62,12 +65,20 @@ function Login({ history, adminState, login, classes }) {
         login(payload);
     };
 
+    const handleClose = () => {
+        setOpenSnack(false);
+    };
 
     useEffect(() => {
         if(!adminState.isLoading && adminState.isLoggedIn){
             history.push("/admin/users");
         }
+
+        if(adminState.error){
+            setOpenSnack(true);
+        }
     },[adminState]);// eslint-disable-line react-hooks/exhaustive-deps
+
 
     return (
         <Container component="main" maxWidth="xs">
@@ -125,6 +136,11 @@ function Login({ history, adminState, login, classes }) {
                     </Grid>
                 </form>
             </div>
+            <Snackbar
+                open={openSnack}
+                onClose={handleClose}
+                message={adminState.errorMessage}
+            />
             <Box mt={8}>
                 <Copyright />
             </Box>
