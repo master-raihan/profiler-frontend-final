@@ -29,3 +29,32 @@ export const getFieldsApi = async () => {
         url
     );
 };
+
+export const addCustomFieldApi = async (request) => {
+    const url = `${absUserApiUrl}/custom-fields/add-field`;
+
+    return sendRequestWithToken(
+        "POST",
+        url,
+        request
+    );
+};
+
+export const getCustomFieldsByAuthUserApi = async () => {
+    const url = `${absUserApiUrl}/custom-fields/get-by-auth-user`;
+
+    return sendRequestWithToken(
+        "GET",
+        url
+    );
+};
+
+export const filterApi = async (request) => {
+    const url = `${absUserApiUrl}/contacts/filter`;
+
+    return sendRequestWithToken(
+        "POST",
+        url,
+        request
+    );
+};
