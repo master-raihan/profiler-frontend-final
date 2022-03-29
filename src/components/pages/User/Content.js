@@ -29,6 +29,9 @@ import TabBar from "../../TabBar";
 import TabPanel from "../../TabPanel";
 import { addNewUser, getAllUsers } from "../../../stateManagement/admin/adminAction";
 import { connect } from "react-redux";
+import Snackbar from "@material-ui/core/Snackbar";
+import FormHelperText from "@material-ui/core/FormHelperText";
+import Chip from "@material-ui/core/Chip";
 
 const styles = (theme) => ({
   paper: {
@@ -59,6 +62,17 @@ const styles = (theme) => ({
   }
 });
 
+const status =(id)=>{
+  switch (id){
+    case 0:
+      return 'Blocked';
+    case 1:
+      return <Chip label="Active" color="primary" />;
+    case 2:
+      return <Chip label="Inactive" />;
+  }
+}
+
 function Content(props) {
   const { classes, addNewUser, adminState, getAllUsers } = props;
   const tabNames = ["Users", "Tags"];
@@ -71,6 +85,8 @@ function Content(props) {
       email: "",
       password: ""
   });
+  const [isLoad, setIsLoad] = useState(false);
+  const [openSnack, setOpenSnack] = useState({ isActive: false, message: '' });
 
   const handleInput = (event) => {
     setUser({ ...user, [event.target.name]: event.target.value })
@@ -87,12 +103,20 @@ function Content(props) {
 
   const handleClose = () => {
     setOpen(false);
+    setIsLoad(false);
+    setUser({
+      status: "",
+      first_name: "",
+      last_name: "",
+      email: "",
+      password: ""
+    });
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
     addNewUser(user);
-    setOpen(false);
+    setIsLoad(true);
   }
 
   const handleRefresh = (event) => {
@@ -102,6 +126,14 @@ function Content(props) {
   useEffect(()=>{
     getAllUsers();
   },[]);// eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(()=>{
+    if(isLoad){
+      if(!adminState.isLoading && !adminState.error){
+        setOpen(false);
+      }
+    }
+  },[adminState]);
 
   return (
     <React.Fragment>
@@ -162,7 +194,6 @@ function Content(props) {
                     <TableCell align="left">Email</TableCell>
                     <TableCell align="left">First Name</TableCell>
                     <TableCell align="left">Last Name</TableCell>
-                    <TableCell align="center">Username</TableCell>
                     <TableCell align="center">Status</TableCell>
                   </TableRow>
                 </TableHead>
@@ -172,8 +203,7 @@ function Content(props) {
                         <TableCell align="left">{user.email}</TableCell>
                         <TableCell align="left">{user.first_name}</TableCell>
                         <TableCell align="left">{user.last_name}</TableCell>
-                        <TableCell align="center">{user.username}</TableCell>
-                        <TableCell align="center">{user.status}</TableCell>
+                        <TableCell align="center">{status(user.status)}</TableCell>
                       </TableRow>
                   ))}
                 </TableBody>
@@ -201,6 +231,7 @@ function Content(props) {
                             label="First Name"
                             autoFocus
                         />
+                        { adminState.errors && 'first_name' in adminState.errors && <FormHelperText className={classes.helper}>{adminState.errors['first_name']}</FormHelperText> }
                       </Grid>
                       <Grid item xs={12} sm={6}>
                         <TextField
@@ -213,6 +244,7 @@ function Content(props) {
                             onChange={handleInput}
                             autoComplete="lname"
                         />
+                        { adminState.errors && 'last_name' in adminState.errors && <FormHelperText className={classes.helper}>{adminState.errors['last_name']}</FormHelperText> }
                       </Grid>
                       <Grid item xs={12} sm={12}>
                         <FormControl variant="outlined" required fullWidth>
@@ -227,6 +259,7 @@ function Content(props) {
                             <MenuItem value="2">Block</MenuItem>
                           </Select>
                         </FormControl>
+                        { adminState.errors && 'status' in adminState.errors && <FormHelperText className={classes.helper}>{adminState.errors['status']}</FormHelperText> }
                       </Grid>
                       <Grid item xs={12}>
                         <TextField
@@ -239,6 +272,7 @@ function Content(props) {
                             onChange={handleInput}
                             autoComplete="email"
                         />
+                        {  adminState.errors && 'email' in adminState.errors && <FormHelperText className={classes.helper}>{adminState.errors['email']}</FormHelperText> }
                       </Grid>
                       <Grid item xs={12}>
                         <TextField
@@ -252,6 +286,7 @@ function Content(props) {
                             type="password"
                             autoComplete="current-password"
                         />
+                        { adminState.errors && 'password' in adminState.errors && <FormHelperText className={classes.helper}>{adminState.errors['password']}</FormHelperText> }
                       </Grid>
                     </Grid>
                   </form>
@@ -266,6 +301,11 @@ function Content(props) {
               </DialogActions>
             </Dialog>
           </Paper>
+          <Snackbar
+              open={openSnack.isActive}
+              onClose={handleClose}
+              message={openSnack.message}
+          />
         </TabPanel>
         <TabPanel value={tabValue} index={1}>
           {tabNames[1]}

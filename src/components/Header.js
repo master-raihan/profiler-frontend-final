@@ -35,7 +35,7 @@ const styles = (theme) => ({
 });
 
 function Header(props) {
-  const { classes, onDrawerToggle, title } = props;
+  const { classes, title } = props;
   const history = useHistory();
   document.title = useCapitalized(title);
 

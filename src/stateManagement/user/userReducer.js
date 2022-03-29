@@ -9,17 +9,18 @@ const initialState = {
     customFields: {},
     response: {},
     error: false,
-    errorMessage: ""
+    errorMessage: "",
+    errors: []
 }
 
 const userReducer = (state = initialState, action) => {
     switch(action.type){
         case ACTION.USER_LOGIN:
-            return { ...state, isLoading: true };
+            return { ...state, isLoading: true, error: false, errors: [] };
         case ACTION.USER_LOGIN_SUCCESS:
-            return { ...state, isLoading: false, error: false, isLoggedIn: true, auth: action.payload };
+            return { ...state, isLoading: false, error: false, errors: [], isLoggedIn: true, auth: action.payload };
         case ACTION.USER_LOGIN_FAILED:
-            return { ...state, isLoading: false, errorMessage: action.payload , error: true };
+            return { ...state, isLoading: false, error: true, errors: action.payload.response.data.message };
         case ACTION.GET_ALL_CONTACTS_BY_AUTH_USER:
             return { ...state, isLoading: true };
         case ACTION.GET_ALL_CONTACTS_BY_AUTH_USER_SUCCESS:
@@ -43,6 +44,14 @@ const userReducer = (state = initialState, action) => {
         case ACTION.GET_CUSTOM_FIELDS_BY_AUTH_USER_SUCCESS:
             return { ...state, isLoading: false, error: false, customFields: action.payload.data, response: { status: action.payload.status, success: action.payload.success, message: action.payload.message } };
         case ACTION.GET_CUSTOM_FIELDS_BY_AUTH_USER_FAILED:
+            return { ...state, isLoading: false, error: true, errorMessage: action.payload };
+        case ACTION.DELETE_CUSTOM_FIELDS_BY_AUTH_USER:
+            return { ...state, isLoading: true };
+        case ACTION.DELETE_CUSTOM_FIELDS_BY_AUTH_USER_SUCCESS:
+            const next = {...state.customFields };
+            delete next[action.payload.data];
+            return { ...state, isLoading: false, error: false, customFields: next, response: { status: action.payload.status, success: action.payload.success, message: action.payload.message } };
+        case ACTION.DELETE_CUSTOM_FIELDS_BY_AUTH_USER_FAILED:
             return { ...state, isLoading: false, error: true, errorMessage: action.payload };
         case ACTION.GET_ALL_FILTERED_CONTACTS_BY_AUTH_USER:
             return { ...state, isLoading: true };

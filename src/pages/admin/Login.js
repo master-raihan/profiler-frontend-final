@@ -12,7 +12,8 @@ import Container from "@material-ui/core/Container";
 import { connect } from "react-redux";
 import { adminLogin } from "../../stateManagement/admin/adminAction";
 import Grid from "@material-ui/core/Grid";
-import Snackbar from '@material-ui/core/Snackbar';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Snackbar from "@material-ui/core/Snackbar";
 
 function Copyright() {
     return (
@@ -45,19 +46,23 @@ const styles = (theme) => ({
     submit: {
         margin: theme.spacing(3, 0, 2),
     },
+    helper: {
+        color: 'red'
+    }
 });
 
 function Login({ history, adminState, login, classes }) {
     document.title = "Admin Login";
+    const [openSnack, setOpenSnack] = useState({ isActive: false, message: '' });
     const [payload, setPayload] = useState({
         email: "",
         password: "",
     });
 
-    const [openSnack, setOpenSnack] = useState(false);
-
+    const [error, setError] = useState({ email: false, password: false });
     const inputsHandler = (e) => {
         setPayload({ ...payload, [e.target.name]: e.target.value });
+        setError({...error, [e.target.name]: false });
     };
 
     const handleLogin = (event) => {
@@ -75,7 +80,11 @@ function Login({ history, adminState, login, classes }) {
         }
 
         if(adminState.error){
-            setOpenSnack(true);
+            if(typeof adminState.errors === 'object'){
+                setError({ email: 'email' in adminState.errors, password: 'password' in adminState.errors });
+            }else if (typeof adminState.errors === 'string'){
+                setOpenSnack({ isActive: true, message: adminState.errors });
+            }
         }
     },[adminState]);// eslint-disable-line react-hooks/exhaustive-deps
 
@@ -103,6 +112,7 @@ function Login({ history, adminState, login, classes }) {
                         value={payload.email}
                         autoFocus
                     />
+                    { error.email && <FormHelperText className={classes.helper}>{adminState.errors['email']}</FormHelperText> }
                     <TextField
                         variant="outlined"
                         margin="normal"
@@ -116,6 +126,7 @@ function Login({ history, adminState, login, classes }) {
                         value={payload.password}
                         autoComplete="current-password"
                     />
+                    { error.password && <FormHelperText className={classes.helper}>{adminState.errors['password']}</FormHelperText> }
                     <Button
                         type="submit"
                         fullWidth
@@ -137,9 +148,9 @@ function Login({ history, adminState, login, classes }) {
                 </form>
             </div>
             <Snackbar
-                open={openSnack}
+                open={openSnack.isActive}
                 onClose={handleClose}
-                message={adminState.errorMessage}
+                message={openSnack.message}
             />
             <Box mt={8}>
                 <Copyright />

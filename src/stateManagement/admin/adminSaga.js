@@ -8,11 +8,9 @@ function* adminLoginSaga(action) {
         if(response.data.success){
             localStorage.setItem("access_token", response.data.data.access_token);
             yield put({ type: ACTION.ADMIN_LOGIN_SUCCESS, payload: response.data });
-        }else {
-            yield put({type: ACTION.ADMIN_LOGIN_FAILED, payload: response.data});
         }
     }catch(error){
-        yield put({type: ACTION.ADMIN_LOGIN_FAILED, payload: error.message});
+        yield put({type: ACTION.ADMIN_LOGIN_FAILED, payload: error});
     }
 }
 
@@ -23,7 +21,7 @@ function* addNewUserSaga(action) {
             yield put({ type: ACTION.ADD_NEW_USER_SUCCESS, payload: response.data });
         }
     }catch (error) {
-        yield put({ type: ACTION.ADD_NEW_USER_FAILED, payload: error.message });
+        yield put({ type: ACTION.ADD_NEW_USER_FAILED, payload: error });
     }
 }
 
@@ -34,7 +32,7 @@ function* getAllUsersSaga(action) {
             yield put({ type: ACTION.GET_ALL_USERS_SUCCESS, payload: response.data });
         }
     }catch (error) {
-        yield put({ type: ACTION.GET_ALL_USERS_FAILED, payload: error.message });
+        yield put({ type: ACTION.GET_ALL_USERS_FAILED, payload: error });
     }
 }
 

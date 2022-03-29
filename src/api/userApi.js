@@ -49,6 +49,16 @@ export const getCustomFieldsByAuthUserApi = async () => {
     );
 };
 
+export const deleteCustomFieldsByAuthUserApi = async (request) => {
+    const url = `${absUserApiUrl}/custom-fields/delete-by-auth-user`;
+
+    return sendRequestWithToken(
+        "POST",
+        url,
+        request
+    );
+};
+
 export const filterApi = async (request) => {
     const url = `${absUserApiUrl}/contacts/filter`;
 

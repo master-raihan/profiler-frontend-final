@@ -6,7 +6,7 @@ import {
     getFieldsApi,
     addCustomFieldApi,
     getCustomFieldsByAuthUserApi,
-    filterApi
+    filterApi, deleteCustomFieldsByAuthUserApi
 } from "../../api/userApi";
 
 function* userLoginSaga(action) {
@@ -15,11 +15,9 @@ function* userLoginSaga(action) {
         if(response.data.success){
             localStorage.setItem("access_token", response.data.data.access_token);
             yield put({ type: ACTION.USER_LOGIN_SUCCESS, payload: response.data });
-        }else {
-            yield put({type: ACTION.USER_LOGIN_FAILED, payload: response.data});
         }
     }catch(error){
-        yield put({type: ACTION.USER_LOGIN_FAILED, payload: error.message});
+        yield put({type: ACTION.USER_LOGIN_FAILED, payload: error});
     }
 }
 
@@ -31,6 +29,17 @@ function* getAllContactsByAuthUserSaga(action) {
         }
     }catch (error) {
         yield put({ type: ACTION.GET_ALL_CONTACTS_BY_AUTH_USER_FAILED, payload: error.message});
+    }
+}
+
+function* deleteCustomFieldsByAuthUserSaga(action) {
+    try{
+        const response = yield call(deleteCustomFieldsByAuthUserApi, action.payload);
+        if(response.data.success){
+            yield put({ type: ACTION.DELETE_CUSTOM_FIELDS_BY_AUTH_USER_SUCCESS, payload: response.data });
+        }
+    }catch (error) {
+        yield put({ type: ACTION.DELETE_CUSTOM_FIELDS_BY_AUTH_USER_FAILED, payload: error.message});
     }
 }
 
@@ -94,6 +103,7 @@ function* userWatcher() {
     yield takeEvery(ACTION.GET_FIELDS, getFieldsSaga);
     yield takeEvery(ACTION.ADD_CUSTOM_FIELD, addCustomFieldSaga);
     yield takeEvery(ACTION.GET_CUSTOM_FIELDS_BY_AUTH_USER, getCustomFieldsByAuthUserSaga);
+    yield takeEvery(ACTION.DELETE_CUSTOM_FIELDS_BY_AUTH_USER, deleteCustomFieldsByAuthUserSaga);
     yield takeEvery(ACTION.GET_ALL_FILTERED_CONTACTS_BY_AUTH_USER, filterSaga);
 }
 
